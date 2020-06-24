@@ -1,46 +1,75 @@
+import numpy as np
+from api.tools import Tools as t
+from api.tools import Match
+from match_by_duration import MatchByDuration
 import os
-import time
-import json
-main_images = '/mnt/data/palpatine/SAMPLES/YT_LINK/REF/main_images'
-second_images = '/mnt/data/palpatine/SAMPLES/YT_LINK/REF/second_images'
-idx = 0
-mse_list = []
-t_start = time.time()
-correct = 0
-uncorrect = 0
-while idx < 4000:
+import cv2
+from tqdm import tqdm
 
-    a = '{}/{}.png'.format(main_images, idx)
-    b = '{}/{}.png'.format(second_images, idx)
-    ai = '{}/{}.json'.format(main_images, idx)
-    bi = '{}/{}.json'.format(second_images, idx)
-    if False not in [os.path.isfile(a), os.path.isfile(b),os.path.isfile(ai), os.path.isfile(bi)]:
-        with open(ai, 'r') as f:
-            a_info = json.load(f)
-        with open(bi, 'r') as f:
-            b_info = json.load(f)
+# export_path = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/export_to_process.json'
+# youtube_path = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/youtube_to_process.json'
+# workdir = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir'
 
-        A = cv2.imread(a)
-        B = cv2.imread(b)
-        mse = ((A - B) ** 2).mean(axis=None)
-        mse_list.append((idx, mse))
-        dur_diff = abs(a_info['duration'] - b_info['duration'])
-        print(idx, mse,dur_diff)
-        if mse > 30 and dur_diff > 1000:
-            uncorrect +=1
-        else:
-            correct += 1
 
-    idx +=1
+matches_path = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/matches_mse.pickle'
+path_out = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/matches_mse2.pickle'
+workdir = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir'
 
-mse_list= sorted(mse_list, key=lambda x: x[1])
-print('max', mse_list[-1])
-print('min', mse_list[0])
-print('median', mse_list[len(mse_list)//2])
-print('correct', correct)
-print('uncorrect', uncorrect)
-print('whole len', idx)
-print('whole time', time.time()-t_start)
 
-# mse = ((A - B)**2).mean(axis=ax)
+class CheckMSE():
+    def __init__(self, workdir, matches_path, path_out):
+        self.matches = t.load_pickle(matches_path)
+        self.workdir = workdir
+        self.path_out = path_out
 
+    def run(self):
+
+        done = 0
+        counter = 0
+        for ida, match in tqdm(self.matches.items(), ascii=True, desc='process {} lines'.format(len(self.matches))):
+            counter += 1
+
+
+            try:
+                if len(self.matches[ida].mse):
+                    continue
+            except:
+                self.matches[ida].mse = []
+            a_path = os.path.join(self.workdir, match.ida, 'image.png')
+            a_info_path = os.path.join(self.workdir, match.ida, 'info.json')
+            if not os.path.isfile(a_path) or not os.path.isfile(a_info_path):
+                print('cannot read', a_path)
+                continue
+            A = cv2.imread(a_path)
+            A_info = t.load_json(a_info_path)
+            if len([ret for ret in A_info['rets'] if not ret]) > 2:
+                # print(A_info['rets'])
+                continue
+
+            if len(match.diff):
+                for idb in match.idb:
+                    b_path = os.path.join(self.workdir, idb, 'image.png')
+                    b_info_path = os.path.join(self.workdir, idb, 'info.json')
+                    if not os.path.isfile(b_path) or not os.path.isfile(b_info_path):
+                        print('cannot read', b_path)
+                        continue
+                    B = cv2.imread(b_path)
+                    B_info = t.load_json(b_info_path)
+                    if len([ret for ret in B_info['rets'] if not ret]) > 2:
+                        # print(B_info['rets'])
+                        continue
+
+                    mse = ((A - B) ** 2).mean(axis=None)
+                    match.mse.append((idb, mse))
+                    done += 1
+
+                    # diffs.append(len(match.diff))
+
+            if counter % 100 == 0:
+                print('data_saved')
+                t.save_pickle(self.path_out, self.matches)
+        t.save_pickle(self.path_out, self.matches)
+        print('data_saved')
+        print('done {}/{}'.format(done, len(self.matches)))
+
+CheckMSE(workdir, matches_path, path_out).run()

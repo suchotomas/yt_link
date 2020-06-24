@@ -2,7 +2,7 @@ import subprocess
 import shlex
 import json
 import os
-
+import pickle
 class Tools:
 
     # @staticmethod
@@ -35,6 +35,42 @@ class Tools:
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path)
             return folder_path
+
+    @staticmethod
+    def load_json(path):
+        with open(path, 'r') as f:
+            data  = json.load(f)
+        return data
+
+    @staticmethod
+    def save_json(path, data):
+        with open(path, 'w', encoding='utf8') as outfile:
+            json.dump(data, outfile, indent=4, ensure_ascii=False)
+
+    @staticmethod
+    def load_pickle(path):
+        # open a file, where you stored the pickled data
+        file = open(path, 'rb')
+        # dump information to that file
+        data = pickle.load(file)
+
+        # close the file
+        file.close()
+        return data
+
+    @staticmethod
+    def save_pickle(path, data):
+        with open(path, 'wb') as handle:
+            pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+class Match:
+    def __init__(self, ida):
+        self.ida = ida
+        self.idb = []
+        self.diff = []
+        self.adur = None
+        self.mse = None
 
 # path = '/mnt/data/palpatine/SAMPLES/YT_LINK/REF/HC6C3HxnBXQ.mkv'
 # # cmd = 'ffmpeg -i /mnt/data/palpatine/SAMPLES/YT_LINK/REF/HC6C3HxnBXQ.mkv -map 0:v:0 -c copy -f null -'
