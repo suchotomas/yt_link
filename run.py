@@ -1,4 +1,4 @@
-from preprocess import CreateProcessPool
+from preprocess import CreateProcessPool, CreateImages
 from match_by_duration import MatchByDuration
 import time
 import argparse
@@ -24,10 +24,9 @@ from names import Names as n
 # test_len = args.t
 # workdir = args.workdir
 
-exports_list_path = '/mnt/data/palpatine/DATASETS/YT_LINK/HARD_COPY/exports.json'
-yt_list_path = '/mnt/data/palpatine/DATASETS/YT_LINK/HARD_COPY/youtube.json'
+exports_list_path = '/mnt/data/palpatine/DATASETS/YT_LINK/sources_exports.json'
+yt_list_path = '/mnt/data/palpatine/DATASETS/YT_LINK/sources_youtube.json'
 workdir = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir'
-
 
 # exports_list = '/mnt/data/palpatine/SAMPLES/YT_LINK/REF/list_exports_test.json'
 # yt_list = '/mnt/data/palpatine/SAMPLES/YT_LINK/REF/list_youtube_test.json'
@@ -37,14 +36,17 @@ workdir = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir'
 # workdir = '/mnt/data/palpatine/SAMPLES/YT_LINK/REF/workdir'
 test_len = 0
 ss = 0
+DIFF_LIMIT = 1000
+
 
 workdir = t.create_folder(workdir)
 t_start = time.time()
 print('\nCREATE PROCESS POOL AND IMAGES')
 vl = CreateProcessPool(youtube_path=yt_list_path, exports_path=exports_list_path, workdir=workdir, test_len=test_len, ss=ss)
-vl.run()
+youtube_to_process_path, export_to_process_path = vl.run()
+# CreateImages().process(youtube_to_process_path, export_to_process_path, workdir)
 print('\nMATCH BY DURATION')
-m = MatchByDuration(youtube_path=vl.youtube_to_process_path, export_path=vl.export_to_process_path, workdir=workdir)
+m = MatchByDuration(youtube_path=youtube_to_process_path, export_path=export_to_process_path, workdir=workdir, diff_limit=DIFF_LIMIT)
 m.get_duration_lists()
 
 print('done in {:.02f} s'.format(time.time() - t_start))

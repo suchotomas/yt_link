@@ -1,10 +1,6 @@
 import time
 import os
 import json
-import numpy as np
-from tqdm import tqdm
-import cv2
-from api.tools import Tools as t
 from names import Names as n
 import time,os, cv2, json
 import numpy as np
@@ -16,20 +12,15 @@ class CreateProcessPool:
 
     def __init__(self, youtube_path, exports_path, workdir, test_len=0, ss=0):
         self.timestamp = time.time()
-
         self.youtube_path = youtube_path
         self.exports_path = exports_path
         self.test_len = test_len
         self.run_from = ss
         self.workdir = workdir
-
-
-
     def run(self):
 
-
-        self.yt_list = t.load_json(self.youtube_path)
-        self.ex_list = t.load_json(self.exports_path)
+        self.yt_list =t.load_json(self.youtube_path)
+        self.ex_list =t.load_json(self.exports_path)
         self.youtube_to_process, self.export_to_process  = [],[]
         print('==> prepare_in_out_list')
         self.prepare_in_out()
@@ -40,15 +31,17 @@ class CreateProcessPool:
         self.youtube_to_process_path = os.path.join(self.workdir, 'youtube_to_process.json')
         self.export_to_process_path = os.path.join(self.workdir, 'export_to_process.json')
 
-        print('==> read youtube durations')
-        self.read_durations(self.youtube_to_process)
-        t.save_json(self.youtube_to_process_path, self.youtube_to_process)
+        # print('==> read youtube durations')
+        # self.read_durations(self.youtube_to_process)
+        # t.save_json(self.youtube_to_process_path, self.youtube_to_process)
 
         print('==> read export durations')
         self.read_durations(self.export_to_process)
         t.save_json(self.export_to_process_path, self.export_to_process)
 
-        CreateImages().process(self.yt_list, self.ex_list, self.workdir)
+        return self.youtube_to_process_path, self.export_to_process_path
+
+
 
 
     @staticmethod
@@ -66,7 +59,6 @@ class CreateProcessPool:
             name, _ = os.path.splitext(splitted[-1])
             out_path = os.path.join(n.EXPORT, event_id, name)
             self.export_to_process.append(self.record(path, out_path))
-
         for path in self.yt_list:
             basename = os.path.basename(path)
             name, _ = os.path.splitext(basename)
@@ -89,10 +81,10 @@ class CreateProcessPool:
 class CreateImages:
     def __init__(self):
         pass
-    def process(self, yt_path, ex_path, workdir):
+    def process(self, youtube_path, exports_path, workdir):
 
-        yt_list = t.load_json(yt_path)
-        ex_list = t.load_json(ex_path)
+        yt_list = t.load_json(youtube_path)
+        ex_list = t.load_json(exports_path)
         self.test_len = 0
         self.run_from = 41609
         self.timestamp=  time.time()

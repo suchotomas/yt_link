@@ -38,6 +38,8 @@ class Tools:
 
     @staticmethod
     def load_json(path):
+        if not os.path.isfile(path):
+            return None
         with open(path, 'r') as f:
             data  = json.load(f)
         return data
@@ -63,6 +65,10 @@ class Tools:
         with open(path, 'wb') as handle:
             pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+    @staticmethod
+    def get_offset(peak,dist1, dist2, dur1, dur2):
+        full_dur = (dur1 + dur2)
+        return (((peak) / (len(dist1)+len(dist2)-1)) * full_dur) - dur2
 
 class Match:
     def __init__(self, ida):
