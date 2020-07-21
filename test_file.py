@@ -71,21 +71,39 @@ from api.tools import Tools as t
 # aaa=aaa.T
 # print(time.time()-t1)
 # print(np.array_equal(aaa, aaa_1))
-import os
-yp = '/mnt/data/palpatine/DATASETS/YT_LINK/20200615_abs_paths/youtube.json'
-ep = '/mnt/data/palpatine/DATASETS/YT_LINK/20200615_abs_paths/exports.json'
+# import os
+# yp = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/youtube_to_process.json'
+# ep = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/export_to_process.json'
 
-yl = t.load_json(yp)
-el = t.load_json(ep)
+# yl = t.load_json(yp)
+# el = t.load_json(ep)
 
-total_size = 0
-whole_list = yl+el
-for idx, path in enumerate(whole_list):
-    if idx % 1000 == 0:
-        print(idx, len(whole_list))
-    try:
-        size = os.path.getsize(path)
-        total_size += size
-    except:
-        continue
-print(total_size)
+# total_size = 0
+# whole_list = el
+
+# whole_duration = 0
+# for idx, line in enumerate(whole_list):
+#     if idx % 1000 == 0:
+#         print(idx)
+#     if line['duration'] is not None:
+#         total_size += line['duration']
+# print(total_size/1000/3600)
+
+path = '100_id_list.txt'
+yt_to_process = t.load_pickle('/mnt/data/palpatine/DATASETS/YT_LINK/workdir/matches_mse.pickle')
+new_matches = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/matches_100.pickle'
+
+file1 = open(path, 'r') 
+lines = file1.read().splitlines()
+id_list = []
+unknown = 0
+matches100 = {}
+for line in lines:
+    key = 'youtube/'+ line.split(',')[-1]
+    if key not in yt_to_process:
+        unknown +=1
+    matches100[key] = yt_to_process[key]
+print('unknown', unknown)
+print('new', len(matches100))
+t.save_pickle(new_matches, matches100)
+

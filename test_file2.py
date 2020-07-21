@@ -4,7 +4,7 @@ import numpy as np
 import cv2
 import os
 import time
-path = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/matches_mse.pickle'
+path = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/matches_100.pickle'
 workdir = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir'
 
 matches = t.load_pickle(path)
@@ -12,7 +12,7 @@ matches = t.load_pickle(path)
 def show_pair (ida, idb):
     a_path = os.path.join(workdir, ida, 'image.png')
 
-    b_path = os.path.join(workdir, idb)
+    b_path = os.path.join(workdir, idb, 'image.png')
     A = cv2.imread(a_path)
     B = cv2.imread(b_path)
     C =np.array(np.abs(np.array(A, dtype=np.int16) - np.array(B, dtype=np.int16)), dtype=np.uint8)
@@ -41,8 +41,16 @@ for idx, (ida, match) in enumerate(matches.items()):
     if len(match.idb) == 1:
         idb_info_path =os.path.join(workdir, match.idb[0], 'info.json')
         idb_info = t.load_json(idb_info_path)
-        print(ida, match.idb[0])
-        print()
+        print(ida_info['src'], idb_info['src'])
+        # print()
+    elif len(match.idb) > 1:
+        multiple_mse +=1
+        for idb in match.idb:
+            idb_info_path =os.path.join(workdir, idb, 'info.json')
+            idb_info = t.load_json(idb_info_path)
+            print(ida_info['src'], idb_info['src'])
+            print(ida, idb)
+            show_pair(ida, idb)
 
 
 
