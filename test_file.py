@@ -90,7 +90,7 @@ from api.tools import Tools as t
 # print(total_size/1000/3600)
 
 path = '100_id_list.txt'
-yt_to_process = t.load_pickle('/mnt/data/palpatine/DATASETS/YT_LINK/workdir/matches_mse.pickle')
+yt_to_process = t.load_pickle('/mnt/data/palpatine/DATASETS/YT_LINK/workdir/matches_100.pickle')
 new_matches = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/matches_100.pickle'
 
 file1 = open(path, 'r') 
@@ -102,8 +102,14 @@ for line in lines:
     key = 'youtube/'+ line.split(',')[-1]
     if key not in yt_to_process:
         unknown +=1
+
+    match = yt_to_process[key]
+    new_mse = []
+    for mse in match.mse:
+        new_mse.append(mse[-1])
+    match.mse = new_mse
     matches100[key] = yt_to_process[key]
 print('unknown', unknown)
 print('new', len(matches100))
-t.save_pickle(new_matches, matches100)
+# t.save_pickle(new_matches, matches100)
 

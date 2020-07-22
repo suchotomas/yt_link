@@ -22,10 +22,10 @@ def show_pair (ida, idb):
     B = cv2.resize(B, res)
     C = cv2.resize(C, res)
 
-    cv2.imshow('youtube',A)
-    cv2.imshow('exports',B)
+    cv2.imshow('youtube', A)
+    cv2.imshow('exports', B)
     cv2.imshow('diff',C)
-    cv2.waitKey(1)
+    cv2.waitKey(0)
     time.sleep(0.2)
 
 
@@ -41,16 +41,21 @@ for idx, (ida, match) in enumerate(matches.items()):
     if len(match.idb) == 1:
         idb_info_path =os.path.join(workdir, match.idb[0], 'info.json')
         idb_info = t.load_json(idb_info_path)
-        print(ida_info['src'], idb_info['src'])
+        print("['{}','{}'],".format(ida, match.idb[0]))
+        # print(ida_info['src'], idb_info['src'])
         # print()
     elif len(match.idb) > 1:
+
+        # idx_idb_list = [(idx, match.idb) for match in match.idb if match.mse[-1] > 30]
+        # if not len(idb_mse_list):
+        #     continue
         multiple_mse +=1
-        for idb in match.idb:
-            idb_info_path =os.path.join(workdir, idb, 'info.json')
-            idb_info = t.load_json(idb_info_path)
-            print(ida_info['src'], idb_info['src'])
-            print(ida, idb)
-            show_pair(ida, idb)
+        # for idx, idb in enumerate():
+        #     idb_info_path =os.path.join(workdir, idb, 'info.json')
+        #     idb_info = t.load_json(idb_info_path)
+            # print(ida_info['src'], idb_info['src'])
+            # print(ida, idb)
+            # show_pair(ida, idb)
 
 
 
