@@ -5,7 +5,7 @@ from names import Names as n
 import os, pickle
 from tqdm import tqdm
 from api.tools import Tools as t
-from api.tools import Match
+from api.tools import Match, MatchItem
 import threading
 from threading import Thread, RLock
 
@@ -46,15 +46,15 @@ class MatchByDuration:
             out[ida] = Match(ida)
             out[ida].adur = youtube_durations[idx_a]
 
-        matches_list = self.match_by_durations_multithreaded(out,youtube_durations, export_durations)
+        matches_list = self.match_by_duration(out,youtube_durations, export_durations)
         
-        diffs = [o.diff[-1] for _, o in out.items() if len(o.diff)]
-        print('median', np.median(diffs))
+        # diffs = [o.diff[-1] for _, o in out.items() if len(o.diff)]
+        # print('median', np.median(diffs))
         cnt = 0
-        for _, match in out.items():
-            if len(match.diff):
-                cnt += 1
-        print('matched (less than 1s) {}/{} in {:.02f} sec'.format(cnt, len(out), time.time() - match_start_time))
+        # for _, match in out.items():
+        #     if len(match.diff):
+        #         cnt += 1
+        # print('matched (less than 1s) {}/{} in {:.02f} sec'.format(cnt, len(out), time.time() - match_start_time))
 
 
         with open(self.output_matches_path, 'wb') as handle:
@@ -102,12 +102,12 @@ class MatchByDuration:
     @staticmethod
     def __fill_diff_in_part(out, a,b, from_to,  export_list, youtube_list, diff_limit):
         for idx_b in range(from_to[0], from_to[1]):
-            print(idx_b)
+            # print(idx_b)
             MatchByDuration.__fill_diff(out, a, b, idx_b, export_list, youtube_list, diff_limit)
 
     @staticmethod
     def __fill_diff(out, a, b, idx_b, export_list, youtube_list, diff_limit):
-            print(idx_b)
+            # print(idx_b)
             if b[idx_b] == 0:
                 return
             idb = export_list[idx_b]['dst']
@@ -118,16 +118,19 @@ class MatchByDuration:
 
                 diff = abs(a[idx_a] - b[idx_b])
                 if diff < diff_limit:
-                    while LOCK:
-                        out[ida].diff.append(diff)
-                        out[ida].idb.append(idb)
+
+                    out[ida].idb_items[idb] = MatchItem(idb)
+                    out[ida].idb_items[idb].diff = int(diff)
+                    # while LOCK:
+                        # out[ida].diff.append(diff)
+                        # out[ida].idb.append(idb)
         # return out
 
 
 
 #
 export_path = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/export_to_process.json'
-youtube_path = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/youtube_to_process.json'
+youtube_path = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/youtube_to_process_100.json'
 workdir = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir'
 m = MatchByDuration(export_path=export_path, youtube_path=youtube_path, workdir=workdir, diff_limit=1000)
 m.get_duration_lists()

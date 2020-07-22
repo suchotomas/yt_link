@@ -73,10 +73,19 @@ class Tools:
 class Match:
     def __init__(self, ida):
         self.ida = ida
-        self.idb = []
-        self.diff = []
+        self.idb_items = {}
         self.adur = None
+
+    def add_idb(self, idb):
+        self.idb_items[idb] = MatchItem(idb)
+
+class MatchItem:
+    def __init__(self,idb):
+        self.idb = idb
         self.mse = None
+        self.diff = None
+        self.offset = None
+
 
 # path = '/mnt/data/palpatine/SAMPLES/YT_LINK/REF/HC6C3HxnBXQ.mkv'
 # # cmd = 'ffmpeg -i /mnt/data/palpatine/SAMPLES/YT_LINK/REF/HC6C3HxnBXQ.mkv -map 0:v:0 -c copy -f null -'

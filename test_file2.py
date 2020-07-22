@@ -4,10 +4,13 @@ import numpy as np
 import cv2
 import os
 import time
-path = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/matches_100.pickle'
+path = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/matches_100_offsets.pickle'
 workdir = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir'
 
-matches = t.load_pickle(path)
+idy, idb = 'youtube/dpe-IrmhfPY','export/Kriticke_mysleni/EXPORT/05'
+idy, idb = 'youtube/PPEgY50n4Yc','export/ZeroWaste/EXPORT/6'
+
+
 
 def show_pair (ida, idb):
     a_path = os.path.join(workdir, ida, 'image.png')
@@ -28,34 +31,51 @@ def show_pair (ida, idb):
     cv2.waitKey(0)
     time.sleep(0.2)
 
-
+matches = t.load_pickle(path)
 ok  = 0
 nomse = 0
 multiple_mse = 0
+deleted = 0
+to_delete = []
+
+youtube_to_process_with_year = t.load_json('/mnt/data/palpatine/DATASETS/YT_LINK/workdir/youtube_to_process_100.json')
+dct_yt_list = {}
+for item in youtube_to_process_with_year:
+    dct_yt_list[item['dst']] = item
+
+
+years = {}
 for idx, (ida, match) in enumerate(matches.items()):
     ida_info_path = os.path.join(workdir, ida, 'info.json')
     if not os.path.isfile(ida_info_path):
         print('cannot find', ida_info_path)
         continue
     ida_info = t.load_json(ida_info_path)
-    if len(match.idb) == 1:
-        idb_info_path =os.path.join(workdir, match.idb[0], 'info.json')
-        idb_info = t.load_json(idb_info_path)
-        print("['{}','{}'],".format(ida, match.idb[0]))
-        # print(ida_info['src'], idb_info['src'])
-        # print()
-    elif len(match.idb) > 1:
 
-        # idx_idb_list = [(idx, match.idb) for match in match.idb if match.mse[-1] > 30]
-        # if not len(idb_mse_list):
-        #     continue
-        multiple_mse +=1
-        # for idx, idb in enumerate():
-        #     idb_info_path =os.path.join(workdir, idb, 'info.json')
-        #     idb_info = t.load_json(idb_info_path)
-            # print(ida_info['src'], idb_info['src'])
-            # print(ida, idb)
-            # show_pair(ida, idb)
+    offset_found = False
+    for idb, match_item in match.idb_items.items():
+        # idb_info_path = os.path.join(workdir, idb, 'info.json')
+        # idb_info = t.load_json(idb_info_path)
+
+        if match_item.offset is None:
+            to_delete.append((ida, idb))
+        else:
+            # print()
+            # print([ida, idb])
+            offset_found = True
+            ok +=1
+    if not offset_found:
+        year = dct_yt_list[ida]['year']
+        if year not in years:
+            years[year] = 0
+        years[year] += 1
+        # print('https://slideslive.com/{} https://www.youtube.com/watch?v={}'.format(dct_yt_list[ida]['id'], ida.split('/')[-1]))
+        print('https://www.youtube.com/watch?v={}'.format(ida.split('/')[-1]))
+print(years)
+
+for ida, idb in to_delete:
+    del matches[ida].idb_items[idb]
+    deleted +=1
 
 
 
@@ -85,5 +105,4 @@ for idx, (ida, match) in enumerate(matches.items()):
     # except:
     #     nomse+=1
 print('{}/{}'.format(ok, len(matches)))
-print('no mse', nomse)
-print('multiple mse', multiple_mse)
+print(deleted)

@@ -13,6 +13,9 @@ import random
 youtube_path = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/youtube_to_process.json'
 exports_path = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/export_to_process.json'
 workdir = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir'
+DISCS = ['ongoing', 'incoming', 'data-1', 'data-2', 'data-3']
+
+
 class FileToMFCC:
 
     def __init__(self,workdir, sr=16000, max_length=1200):
@@ -40,16 +43,30 @@ class FileToMFCC:
         distances_path = os.path.join(self.workdir, dst, filename)
         if os.path.isfile(distances_path):
             return distances_path
+
+        if not os.path.isfile(src):
+            for disc in DISCS:
+                src_split = src.split('/')
+                if src_split[2] == disc:
+                    continue
+                src_split[2] = disc
+                new_src = '/'.join(src_split)
+                if os.path.isfile(new_src):
+                    print('{} -> {}'.format(src, new_src))
+                    src = new_src
+                    break
+
         folder_path = os.path.dirname(distances_path)
         try:
             t.create_folder(folder_path)
             distances = self.compute_dist(src)
+            if distances is None:
+                return None
             self.save_distances(distances, distances_path)
             return distances_path
         except Exception as e:
             print(folder_path, e)
             return None
-        return distances_path
 
 
     def extract_audio(self, filename):
@@ -60,11 +77,12 @@ class FileToMFCC:
                     .output('-', format='f32le', acodec='pcm_f32le', ac=1, ar=self.sr)
                     .run(cmd='ffmpeg', capture_stdout=True, capture_stderr=True)
                 )
+                return np.frombuffer(out, np.float32)
             except Error as err:
                 print(err.stderr)
                 # raise
-            
-            return np.frombuffer(out, np.float32)
+                return None
+
 
     def _inv_list(self, coef):
         icoef = []
@@ -77,6 +95,8 @@ class FileToMFCC:
     def compute_dist(self, src):
         # sig, sr = mfcc_api.load_audio(src, self.sr, mono=True)
         sig = self.extract_audio(src)
+        if sig is None:
+            return None
         mfc_coef = mfcc_api.mfcc(sig, self.sr)
         distances = np.asarray(self._dist_flow(mfc_coef))
         return distances

@@ -89,27 +89,71 @@ from api.tools import Tools as t
 #         total_size += line['duration']
 # print(total_size/1000/3600)
 
-path = '100_id_list.txt'
-yt_to_process = t.load_pickle('/mnt/data/palpatine/DATASETS/YT_LINK/workdir/matches_100.pickle')
-new_matches = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/matches_100.pickle'
 
-file1 = open(path, 'r') 
-lines = file1.read().splitlines()
-id_list = []
-unknown = 0
-matches100 = {}
-for line in lines:
-    key = 'youtube/'+ line.split(',')[-1]
-    if key not in yt_to_process:
-        unknown +=1
+# ##########
+# path = '100_id_list.txt'
+# yt_to_process = t.load_json('/mnt/data/palpatine/DATASETS/YT_LINK/workdir/youtube_to_process.json')
+# yt_to_process_100 = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/youtube_to_process_100.json'
+#
+# file1 = open(path, 'r')
+# lines = file1.read().splitlines()
+# id_list = []
+# unknown = 0
+#
+# dct_yt_list = {}
+# for item in yt_to_process:
+#     dct_yt_list[item['dst']] = item
+#
+# y100 = []
+# for line in lines:
+#     key = 'youtube/'+ line.split(',')[-1]
+#     if key not in dct_yt_list:
+#         unknown +=1
+#     else:
+#         y100.append(dct_yt_list[key])
+# print('unknown', unknown)
+# print('new', len(y100))
+# # t.save_json(yt_to_process_100, y100)
 
-    match = yt_to_process[key]
-    new_mse = []
-    for mse in match.mse:
-        new_mse.append(mse[-1])
-    match.mse = new_mse
-    matches100[key] = yt_to_process[key]
-print('unknown', unknown)
-print('new', len(matches100))
-# t.save_pickle(new_matches, matches100)
+#
+# exports_list = t.load_json('/mnt/data/palpatine/DATASETS/YT_LINK/workdir/export_to_process.json')
+#
+# for
+import os
+from tqdm import tqdm
+
+DISCS = ['ongoing', 'incoming', 'data-1', 'data-2', 'data-3']
+
+workdir = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir'
+all_sources = t.load_json('/mnt/data/palpatine/DATASETS/YT_LINK/workdir/export_to_process.json')# + t.load_json('/mnt/data/palpatine/DATASETS/YT_LINK/workdir/youtube_to_process.json')
+none_info =0
+cannot_find = 0
+for idx in tqdm(range(len(all_sources)), ascii=True, desc='process {} lines'.format(len(all_sources))):
+    item = all_sources[idx]
+    info_path = os.path.join(workdir, item['dst'], 'info.json')
+    info = t.load_json(info_path)
+    if info is None:
+        none_info += 1
+    else:
+        src = info['src']
+        if os.path.isfile(src):
+            continue
+        saved = False
+        for disc in DISCS:
+            src_split = src.split('/')
+            if src_split[2] == disc:
+                continue
+            src_split[2] = disc
+            new_src = '/'.join(src_split)
+            if os.path.isfile(new_src):
+                print('{} -> {}'.format(src, new_src))
+                info['src'] = new_src
+                t.save_json(info_path, data=info)
+                saved = True
+                break
+        if not saved:
+            cannot_find += 1
+
+print('none_info', none_info)
+print('cannot_find', cannot_find)
 
