@@ -14,12 +14,12 @@ LOCK = RLock()
 
 # DIFF_LIMIT = 1000 # = 1 sec
 class MatchByDuration:
-    def __init__(self, workdir, export_path, youtube_path, diff_limit, threaded=True):
+    def __init__(self, workdir, export_path, youtube_path, diff_limit, out_matches_path, threaded=True):
         self.workdir = workdir
         self.export_path = export_path
         self.youtube_path = youtube_path
         self.diff_limit = diff_limit
-        self.output_matches_path = os.path.join(self.workdir, 'matches.pickle')
+        self.output_matches_path = out_matches_path
         print(self.output_matches_path)
         self.thread = Thread(target=self.get_duration_lists, args=())
         self.thread.daemon = True
@@ -57,8 +57,7 @@ class MatchByDuration:
         # print('matched (less than 1s) {}/{} in {:.02f} sec'.format(cnt, len(out), time.time() - match_start_time))
 
 
-        with open(self.output_matches_path, 'wb') as handle:
-            pickle.dump(matches_list, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        t.save_pickle(self.output_matches_path, matches_list)
 
         return self.output_matches_path
 
@@ -130,7 +129,8 @@ class MatchByDuration:
 
 #
 export_path = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/export_to_process.json'
-youtube_path = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/youtube_to_process_100.json'
+youtube_path = '/mnt/data/palpatine/DATASETS/YT_LINK/100_popular_from_2017_to_process.json'
 workdir = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir'
-m = MatchByDuration(export_path=export_path, youtube_path=youtube_path, workdir=workdir, diff_limit=1000)
+out_matches_path = os.path.join(workdir, 'matches_popular_from2017.pickle')
+m = MatchByDuration(export_path=export_path, youtube_path=youtube_path, workdir=workdir,out_matches_path=out_matches_path, diff_limit=1000)
 m.get_duration_lists()

@@ -28,6 +28,13 @@ exports_list_path = '/mnt/data/palpatine/DATASETS/YT_LINK/sources_exports.json'
 yt_list_path = '/mnt/data/palpatine/DATASETS/YT_LINK/sources_youtube.json'
 workdir = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir'
 
+#
+# exports_list_path = '/mnt/data/palpatine/SAMPLES/YT_LINK/sample/sources_a.json'
+# yt_list_path = '/mnt/data/palpatine/SAMPLES/YT_LINK/sample/sources_b.json'
+# workdir = '/mnt/data/palpatine/SAMPLES/YT_LINK/sample/workdir'
+
+
+
 # exports_list = '/mnt/data/palpatine/SAMPLES/YT_LINK/REF/list_exports_test.json'
 # yt_list = '/mnt/data/palpatine/SAMPLES/YT_LINK/REF/list_youtube_test.json'
 # exports_list = '/mnt/data/palpatine/SAMPLES/YT_LINK/REF/list_exports.json'

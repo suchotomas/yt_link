@@ -13,7 +13,6 @@ import random
 youtube_path = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/youtube_to_process.json'
 exports_path = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/export_to_process.json'
 workdir = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir'
-DISCS = ['ongoing', 'incoming', 'data-1', 'data-2', 'data-3']
 
 
 class FileToMFCC:
@@ -38,31 +37,15 @@ class FileToMFCC:
             dst = file['dst']
             self.run(src, dst)
 
-    def run(self, src, dst):
-        filename = 'distances.npy'
-        distances_path = os.path.join(self.workdir, dst, filename)
-        if os.path.isfile(distances_path):
-            return distances_path
-
-        if not os.path.isfile(src):
-            for disc in DISCS:
-                src_split = src.split('/')
-                if src_split[2] == disc:
-                    continue
-                src_split[2] = disc
-                new_src = '/'.join(src_split)
-                if os.path.isfile(new_src):
-                    print('{} -> {}'.format(src, new_src))
-                    src = new_src
-                    break
-
+    def run(self, src, distances_path):
+        
         folder_path = os.path.dirname(distances_path)
         try:
             t.create_folder(folder_path)
             distances = self.compute_dist(src)
             if distances is None:
                 return None
-            self.save_distances(distances, distances_path)
+            t.save_array(distances, distances_path)
             return distances_path
         except Exception as e:
             print(folder_path, e)
@@ -111,8 +94,8 @@ class FileToMFCC:
         coefs2 = coefs2[1:12]
         return np.linalg.norm(coefs1 - coefs2)
 
-    def save_distances(self, distances, filename):
-        np.save(filename, distances)
+    # def save_distances(self, distances, filename):
+    #     np.save(filename, distances)
 
 # w = FileToMFCC(workdir)
 # # t0 = time.time()

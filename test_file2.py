@@ -4,12 +4,15 @@ import numpy as np
 import cv2
 import os
 import time
-path = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/matches_100_offsets.pickle'
+import collections
+# path = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/matches_100_offsets.pickle'
+path = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir/matches_popular_from2017.pickle'
+
 workdir = '/mnt/data/palpatine/DATASETS/YT_LINK/workdir'
 
-idy, idb = 'youtube/dpe-IrmhfPY','export/Kriticke_mysleni/EXPORT/05'
-idy, idb = 'youtube/PPEgY50n4Yc','export/ZeroWaste/EXPORT/6'
-
+# idy, idb = 'youtube/dpe-IrmhfPY','export/Kriticke_mysleni/EXPORT/05'
+# idy, idb = 'youtube/PPEgY50n4Yc','export/ZeroWaste/EXPORT/6'
+#
 
 
 def show_pair (ida, idb):
@@ -18,7 +21,7 @@ def show_pair (ida, idb):
     b_path = os.path.join(workdir, idb, 'image.png')
     A = cv2.imread(a_path)
     B = cv2.imread(b_path)
-    C =np.array(np.abs(np.array(A, dtype=np.int16) - np.array(B, dtype=np.int16)), dtype=np.uint8)
+    C = np.array(np.abs(np.array(A, dtype=np.int16) - np.array(B, dtype=np.int16)), dtype=np.uint8)
 
     res = (640,360)
     A = cv2.resize(A, res)
@@ -38,10 +41,11 @@ multiple_mse = 0
 deleted = 0
 to_delete = []
 
-youtube_to_process_with_year = t.load_json('/mnt/data/palpatine/DATASETS/YT_LINK/workdir/youtube_to_process_100.json')
+# youtube_to_process_with_year = t.load_json('/mnt/data/palpatine/DATASETS/YT_LINK/workdir/youtube_to_process_100.json')
 dct_yt_list = {}
-for item in youtube_to_process_with_year:
-    dct_yt_list[item['dst']] = item
+# for item in youtube_to_process_with_year:
+#     dct_yt_list[item['dst']] = item
+
 
 
 years = {}
@@ -52,7 +56,7 @@ for idx, (ida, match) in enumerate(matches.items()):
         continue
     ida_info = t.load_json(ida_info_path)
 
-    offset_found = False
+    # offset_found = False
     for idb, match_item in match.idb_items.items():
         # idb_info_path = os.path.join(workdir, idb, 'info.json')
         # idb_info = t.load_json(idb_info_path)
@@ -62,16 +66,18 @@ for idx, (ida, match) in enumerate(matches.items()):
         else:
             # print()
             # print([ida, idb])
-            offset_found = True
+            # offset_found = True
             ok +=1
-    if not offset_found:
-        year = dct_yt_list[ida]['year']
-        if year not in years:
-            years[year] = 0
-        years[year] += 1
+    # if not offset_found:
+
         # print('https://slideslive.com/{} https://www.youtube.com/watch?v={}'.format(dct_yt_list[ida]['id'], ida.split('/')[-1]))
-        print('https://www.youtube.com/watch?v={}'.format(ida.split('/')[-1]))
-print(years)
+        # print('https://www.youtube.com/watch?v={}'.format(ida.split('/')[-1]))
+    # year = dct_yt_list[ida]['year']
+    # if year not in years:
+    #     years[year] = 0
+    # years[year] += 1
+# years = collections.OrderedDict(sorted(years.items()))
+# print(years)
 
 for ida, idb in to_delete:
     del matches[ida].idb_items[idb]
@@ -105,4 +111,5 @@ for ida, idb in to_delete:
     # except:
     #     nomse+=1
 print('{}/{}'.format(ok, len(matches)))
+# t.save_pickle(path_out, matches)
 print(deleted)

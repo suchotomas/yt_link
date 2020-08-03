@@ -3,6 +3,10 @@ import shlex
 import json
 import os
 import pickle
+import numpy as np
+
+DISCS = ['ongoing', 'incoming', 'data-1', 'data-2', 'data-3']
+
 class Tools:
 
     # @staticmethod
@@ -69,6 +73,26 @@ class Tools:
     def get_offset(peak,dist1, dist2, dur1, dur2):
         full_dur = (dur1 + dur2)
         return (((peak) / (len(dist1)+len(dist2)-1)) * full_dur) - dur2
+    @staticmethod
+    def save_array(save_array, filename):
+        np.save(filename, save_array)
+
+    @staticmethod
+    def get_src_path(src):
+        if not os.path.isfile(src):
+            for disc in DISCS:
+                src_split = src.split('/')
+                if src_split[2] == disc:
+                    continue
+                src_split[2] = disc
+                new_src = '/'.join(src_split)
+                if os.path.isfile(new_src):
+                    print('{} -> {}'.format(src, new_src))
+                    src = new_src
+                    break
+
+        return src
+
 
 class Match:
     def __init__(self, ida):
